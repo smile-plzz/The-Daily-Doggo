@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         getNewAnimal(selectedAnimal);
     });
 
-    animalSelect.addEventListener('change', ()_=> {
+    animalSelect.addEventListener('change', () => {
         const selectedAnimal = animalSelect.value;
         getNewAnimal(selectedAnimal);
     });
