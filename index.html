@@ -9,36 +9,39 @@
 <body>
     <div class="container">
         <h1>Random Animal Viewer</h1>
-        <div class="image-container">
+        <div class="image-container" role="img" aria-live="polite" aria-atomic="true">
             <div class="loader"></div>
             <img id="image" src="" alt="A random animal">
             <p id="error-message" class="hidden"></p>
         </div>
         <div class="controls">
-            <button id="prev-button" disabled>&laquo; Prev</button>
-            <button id="like-button">❤️ Like</button>
-            <select id="animal-select">
+            <button id="prev-button" disabled aria-label="Previous image">&laquo; Prev</button>
+            <button id="like-button" aria-label="Like this image">❤️ Like</button>
+            <select id="animal-select" aria-label="Select an animal">
                 <option value="dog">Dog</option>
                 <option value="cat">Cat</option>
                 <option value="fox">Fox</option>
             </select>
-            <button id="new-animal-button">Get New</button>
-            <button id="next-button" disabled>Next &raquo;</button>
+            <button id="new-animal-button" aria-label="Get a new animal image">Get New</button>
+            <button id="next-button" disabled aria-label="Next image">Next &raquo;</button>
         </div>
         <div class="secondary-controls">
-            <button id="view-favorites-button">View Favorites</button>
-            <button id="share-button">Share on Twitter</button>
+            <button id="view-favorites-button" aria-label="View your favorite images">View Favorites</button>
+            <button id="share-button" aria-label="Share this image on Twitter">Share on Twitter</button>
         </div>
     </div>
 
-    <div id="favorites-modal" class="modal hidden">
+    <div id="favorites-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="favorites-heading">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Your Favorites</h2>
+            <span class="close-button" role="button" tabindex="0" aria-label="Close favorites gallery">&times;</span>
+            <h2 id="favorites-heading">Your Favorites</h2>
             <div id="favorites-gallery" class="favorites-gallery"></div>
-            <button id="clear-favorites-button">Clear Favorites</button>
+            <button id="clear-favorites-button" aria-label="Clear all your favorite images">Clear Favorites</button>
         </div>
     </div>
+
+    <div id="toast" class="toast"></div>
+
     <script src="script.js"></script>
 </body>
 </html>

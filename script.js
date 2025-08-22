@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const favoritesGallery = document.getElementById('favorites-gallery');
     const clearFavoritesButton = document.getElementById('clear-favorites-button');
     const shareButton = document.getElementById('share-button');
+    const toast = document.getElementById('toast');
 
     const apis = {
         dog: { url: 'https://random.dog/woof.json', key: 'url' },
@@ -67,6 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const showToast = (message) => {
+        toast.textContent = message;
+        toast.className = 'toast show';
+        setTimeout(function(){ toast.className = toast.className.replace('show', ''); }, 3000);
+    }
+
     animalImage.addEventListener('load', () => {
         loader.classList.add('hidden');
         animalImage.classList.remove('hidden');
@@ -93,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         getNewAnimal(selectedAnimal);
     });
 
-    animalSelect.addEventListener('change', () => {
+    animalSelect.addEventListener('change', ()_=> {
         const selectedAnimal = animalSelect.value;
         getNewAnimal(selectedAnimal);
     });
@@ -103,9 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentImage && !favorites.includes(currentImage)) {
             favorites.push(currentImage);
             localStorage.setItem('animalFavorites', JSON.stringify(favorites));
-            alert('Added to favorites!');
+            showToast('Added to favorites!');
         } else if (favorites.includes(currentImage)) {
-            alert('This image is already in your favorites.');
+            showToast('This image is already in your favorites.');
         }
     });
 
@@ -117,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             favorites.forEach(url => {
                 const img = document.createElement('img');
                 img.src = url;
+                img.loading = 'lazy';
                 favoritesGallery.appendChild(img);
             });
         }
