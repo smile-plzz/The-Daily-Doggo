@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const showContent = (url, name = '') => {
         loader.classList.add('hidden');
         errorMessage.classList.add('hidden');
+        console.log('Attempting to load image:', url);
         image.src = url;
         image.classList.remove('hidden');
         infoContainer.textContent = name;
@@ -113,6 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
     image.addEventListener('load', () => {
         loader.classList.add('hidden');
         image.classList.remove('hidden');
+    });
+
+    image.addEventListener('error', () => {
+        console.error('Image failed to load:', image.src);
+        errorMessage.textContent = 'Failed to load image. Please try again.';
+        errorMessage.classList.remove('hidden');
+        loader.classList.add('hidden');
+        image.classList.add('hidden');
     });
     
     prevButton.addEventListener('click', () => {
