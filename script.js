@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const animalImage = document.getElementById('image');
-    const newAnimalButton = document.getElementById('new-animal-button');
+    const image = document.getElementById('image');
+    const newContentButton = document.getElementById('new-content-button');
     const prevButton = document.getElementById('prev-button');
     const nextButton = document.getElementById('next-button');
     const loader = document.querySelector('.loader');
     const errorMessage = document.getElementById('error-message');
-    const animalSelect = document.getElementById('animal-select');
+    const apiSelect = document.getElementById('api-select');
     const likeButton = document.getElementById('like-button');
     const viewFavoritesButton = document.getElementById('view-favorites-button');
     const favoritesModal = document.getElementById('favorites-modal');
@@ -14,11 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearFavoritesButton = document.getElementById('clear-favorites-button');
     const shareButton = document.getElementById('share-button');
     const toast = document.getElementById('toast');
+    const infoContainer = document.getElementById('info-container');
+    const cataasContainer = document.getElementById('cataas-container');
+    const cataasText = document.getElementById('cataas-text');
+    const cataasButton = document.getElementById('cataas-button');
 
     const apis = {
-        dog: { url: 'https://random.dog/woof.json', key: 'url' },
-        cat: { url: 'https://aws.random.cat/meow', key: 'file' },
-        fox: { url: 'https://randomfox.ca/floof/', key: 'image' }
+        dog: { url: 'https://random.dog/woof.json', key: 'url', type: 'image' },
+        cat: { url: 'https://aws.random.cat/meow', key: 'file', type: 'image' },
+        fox: { url: 'https://randomfox.ca/floof/', key: 'image', type: 'image' },
+        pokemon: { url: 'https://pokeapi.co/api/v2/pokemon/', type: 'pokemon' },
+        meal: { url: 'https://www.themealdb.com/api/json/v1/1/random.php', type: 'meal' },
+        cataas: { url: 'https://cataas.com/cat/says/', type: 'cataas' },
+        art: { url: 'https://api.artic.edu/api/v1/artworks', type: 'art' }
     };
 
     let history = [];
@@ -30,39 +38,67 @@ document.addEventListener('DOMContentLoaded', () => {
         nextButton.disabled = currentIndex >= history.length - 1;
     };
 
-    const showImage = (url) => {
+    const showContent = (url, name = '') => {
         loader.classList.add('hidden');
         errorMessage.classList.add('hidden');
-        animalImage.src = url;
-        animalImage.classList.remove('hidden');
+        image.src = url;
+        image.classList.remove('hidden');
+        infoContainer.textContent = name;
     };
 
-    const getNewAnimal = async (animal) => {
+    const getContent = async (apiName) => {
         loader.classList.remove('hidden');
-        animalImage.classList.add('hidden');
+        image.classList.add('hidden');
+        infoContainer.textContent = '';
         errorMessage.classList.add('hidden');
 
         try {
-            const api = apis[animal];
-            const response = await fetch(api.url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            const imageUrl = data[api.key];
+            const api = apis[apiName];
+            let imageUrl, name;
 
-            // Add to history
-            if (history[currentIndex] !== imageUrl) {
+            if (api.type === 'image') {
+                const response = await fetch(api.url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                imageUrl = data[api.key];
+            } else if (api.type === 'pokemon') {
+                const randomId = Math.floor(Math.random() * 898) + 1;
+                const response = await fetch(`${api.url}${randomId}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                imageUrl = data.sprites.front_default;
+                name = data.name.charAt(0).toUpperCase() + data.name.slice(1);
+            } else if (api.type === 'meal') {
+                const response = await fetch(api.url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                const meal = data.meals[0];
+                imageUrl = meal.strMealThumb;
+                name = meal.strMeal;
+            } else if (api.type === 'cataas') {
+                const text = cataasText.value || 'Hello';
+                imageUrl = `${api.url}${encodeURIComponent(text)}?${new Date().getTime()}`;
+            } else if (api.type === 'art') {
+                const randomPage = Math.floor(Math.random() * 1000) + 1;
+                const response = await fetch(`${api.url}?page=${randomPage}&limit=1`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                const artwork = data.data[0];
+                imageUrl = `https://www.artic.edu/iiif/2/${artwork.image_id}/full/843,/0/default.jpg`;
+                name = artwork.title;
+            }
+
+            if (history[currentIndex]?.url !== imageUrl) {
                 history = history.slice(0, currentIndex + 1);
-                history.push(imageUrl);
+                history.push({ url: imageUrl, name: name });
                 currentIndex++;
             }
             
-            showImage(imageUrl);
+            showContent(imageUrl, name);
             updateButtons();
         } catch (error) {
-            console.error(`Error fetching new ${animal}:`, error);
-            errorMessage.textContent = `Sorry, we could not fetch a new ${animal}. Please try again!`;
+            console.error(`Error fetching new ${apiName}:`, error);
+            errorMessage.textContent = `Sorry, we could not fetch new content. Please try again!`;
             errorMessage.classList.remove('hidden');
             loader.classList.add('hidden');
         }
@@ -74,15 +110,16 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(function(){ toast.className = toast.className.replace('show', ''); }, 3000);
     }
 
-    animalImage.addEventListener('load', () => {
+    image.addEventListener('load', () => {
         loader.classList.add('hidden');
-        animalImage.classList.remove('hidden');
+        image.classList.remove('hidden');
     });
     
     prevButton.addEventListener('click', () => {
         if (currentIndex > 0) {
             currentIndex--;
-            showImage(history[currentIndex]);
+            const item = history[currentIndex];
+            showContent(item.url, item.name);
             updateButtons();
         }
     });
@@ -90,23 +127,33 @@ document.addEventListener('DOMContentLoaded', () => {
     nextButton.addEventListener('click', () => {
         if (currentIndex < history.length - 1) {
             currentIndex++;
-            showImage(history[currentIndex]);
+            const item = history[currentIndex];
+            showContent(item.url, item.name);
             updateButtons();
         }
     });
 
-    newAnimalButton.addEventListener('click', () => {
-        const selectedAnimal = animalSelect.value;
-        getNewAnimal(selectedAnimal);
+    newContentButton.addEventListener('click', () => {
+        const selectedApi = apiSelect.value;
+        getContent(selectedApi);
     });
 
-    animalSelect.addEventListener('change', () => {
-        const selectedAnimal = animalSelect.value;
-        getNewAnimal(selectedAnimal);
+    apiSelect.addEventListener('change', () => {
+        const selectedApi = apiSelect.value;
+        if (selectedApi === 'cataas') {
+            cataasContainer.classList.remove('hidden');
+        } else {
+            cataasContainer.classList.add('hidden');
+        }
+        getContent(selectedApi);
+    });
+
+    cataasButton.addEventListener('click', () => {
+        getContent('cataas');
     });
 
     likeButton.addEventListener('click', () => {
-        const currentImage = animalImage.src;
+        const currentImage = image.src;
         if (currentImage && !favorites.includes(currentImage)) {
             favorites.push(currentImage);
             localStorage.setItem('animalFavorites', JSON.stringify(favorites));
@@ -150,14 +197,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     shareButton.addEventListener('click', () => {
-        const imageUrl = animalImage.src;
+        const imageUrl = image.src;
         if (imageUrl) {
-            const text = `Check out this cute animal!`;
+            const text = `Check out this cool content!`;
             const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(imageUrl)}&text=${encodeURIComponent(text)}`;
             window.open(twitterUrl, '_blank');
         }
     });
 
-    // Load an initial animal image
-    getNewAnimal(animalSelect.value);
+    // Load initial content
+    getContent(apiSelect.value);
 });
